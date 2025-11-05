@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: stg_users
+    description: "Staging model for users data. Selects from the users seed table and adds a loaded_at timestamp."
+    columns:
+      - name: user_id
+        description: "Unique identifier for each user"
+        tests:
+          - unique
+          - not_null
+      
+      - name: signup_date
+        description: "Date when the user signed up"
+        tests:
+          - not_null
+      
+      - name: plan_type
+        description: "Type of subscription plan (free, premium, enterprise)"
+        tests:
+          - not_null
+      
+      - name: loaded_at
+        description: "Timestamp when this data was loaded into the staging layer"
+        tests:
+          - not_null
+
