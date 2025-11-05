@@ -1,0 +1,39 @@
+# dbt
+target/
+dbt_packages/
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Profiles (contains sensitive credentials)
+# Note: profiles.yml should be in ~/.dbt/ not in the repo
+profiles.yml
+
+# Virtual environment
+venv/
+

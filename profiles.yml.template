@@ -1,0 +1,44 @@
+# Snowflake dbt Profile Configuration Template
+# 
+# Copy this file to ~/.dbt/profiles.yml and fill in your Snowflake credentials
+# 
+# IMPORTANT: This file contains sensitive credentials and should NEVER be committed to Git
+# It should remain in your home directory: ~/.dbt/profiles.yml
+
+fintech_plg:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: <your-account-identifier>  # e.g., xy12345.us-east-1 or xy12345
+      user: <your-username>
+      password: <your-password>
+      role: <your-role>  # Optional, defaults to ACCOUNTADMIN (e.g., ACCOUNTADMIN, SYSADMIN)
+      database: <your-database>  # e.g., ANALYTICS_DEV
+      warehouse: <your-warehouse>  # e.g., COMPUTE_WH
+      schema: <your-schema>  # e.g., PUBLIC or ANALYTICS
+      threads: 4
+      client_session_keep_alive: False
+      
+    # Optional: Add production target
+    prod:
+      type: snowflake
+      account: <your-account-identifier>
+      user: <your-username>
+      password: <your-password>
+      role: <your-role>
+      database: <your-production-database>
+      warehouse: <your-production-warehouse>
+      schema: <your-production-schema>
+      threads: 8
+      client_session_keep_alive: False
+
+# Instructions:
+# 1. Copy this template: cp profiles.yml.template ~/.dbt/profiles.yml
+# 2. Replace all <placeholders> with your actual Snowflake credentials
+# 3. To find your account identifier:
+#    - Log into Snowflake: https://app.snowflake.com
+#    - Check the URL: https://<account-identifier>.snowflakecomputing.com
+#    - Or go to: Account → Admin → Accounts
+# 4. Verify connection: cd fintech_plg && dbt debug
+
