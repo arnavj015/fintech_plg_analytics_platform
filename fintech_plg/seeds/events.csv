@@ -26,4 +26,3 @@ user_id,event_type,event_time
 10,transaction,2024-03-21 10:00:00
 5,login,2024-03-22 07:30:00
 5,transaction,2024-03-22 08:30:00
-

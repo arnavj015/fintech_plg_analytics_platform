@@ -1,5 +1,5 @@
 SELECT 
-    *,
-    CURRENT_TIMESTAMP() AS loaded_at
-FROM {{ ref('users') }}
+    *
+    {{ add_loaded_at() }}
+FROM {{ source('raw_fintech', 'users') }}
 

@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: mart_activation_metrics
+    description: |
+      Key user activation KPIs for PLG (Product-Led Growth) funnel analysis.
+      Measures how many users become activated (engage with multiple product features).
+      Critical metric for product-led growth companies to track user onboarding success.
+    meta:
+      owner: "arnav.jain@yourcompany.com"
+      team: "Analytics Engineering"
+    columns:
+      - name: total_signups
+        description: "Total number of users who have signed up for the platform."
+
+      - name: activated_users
+        description: "Count of users who have triggered 2 or more distinct event types. These users are considered 'activated'."
+
+      - name: activation_rate
+        description: "Percentage of signups who become activated users. Calculated as (activated_users / total_signups) * 100."
+        tests:
+          - not_null
+
+  - name: mart_revenue_metrics
+    description: |
+      Monetization metrics aggregated at the platform level.
+      Provides high-level revenue performance indicators for business stakeholders.
+      Used for revenue reporting and financial analysis.
+    meta:
+      owner: "arnav.jain@yourcompany.com"
+      team: "Analytics Engineering"
+    columns:
+      - name: paying_users
+        description: "Total number of distinct users who have made at least one transaction."
+
+      - name: total_revenue
+        description: "Sum of all transaction amounts across all users. Total platform revenue."
+
+      - name: avg_revenue_per_user
+        description: "Average revenue per paying user. Calculated as total_revenue / paying_users."
+
+  - name: mart_retention_metrics
+    description: |
+      Weekly retention cohort metrics tracking user engagement over time.
+      Groups users by their first event week (cohort) and measures how many remain active 4+ weeks later.
+      Essential for understanding product stickiness and long-term user value.
+    meta:
+      owner: "arnav.jain@yourcompany.com"
+      team: "Analytics Engineering"
+    columns:
+      - name: cohort_week
+        description: "Week when users in this cohort first became active (first event time). Used for cohort-based retention analysis."
+
+      - name: cohort_size
+        description: "Total number of users in this cohort (users who first became active in this week)."
+
+      - name: retained_4w
+        description: "Number of users from this cohort who were still active 4 or more weeks after their first event."
+
+      - name: retention_4w_rate
+        description: "Percentage of cohort users retained after 4 weeks. Calculated as (retained_4w / cohort_size) * 100."

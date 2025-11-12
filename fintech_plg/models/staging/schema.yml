@@ -2,26 +2,95 @@ version: 2
 
 models:
   - name: stg_users
-    description: "Staging model for users data. Selects from the users seed table and adds a loaded_at timestamp."
+    description: |
+      Staging model for user master data. 
+      Cleans and standardizes raw user data from the source system, adding metadata timestamps.
+      This is the first transformation layer in our data pipeline.
+    meta:
+      owner: "arnav.jain@yourcompany.com"
+      team: "Analytics Engineering"
     columns:
       - name: user_id
-        description: "Unique identifier for each user"
+        description: "Unique identifier for each user. Primary key for user records."
         tests:
           - unique
           - not_null
       
       - name: signup_date
-        description: "Date when the user signed up"
+        description: "Date when the user signed up for the platform. Used for cohort analysis and retention metrics."
         tests:
           - not_null
       
       - name: plan_type
-        description: "Type of subscription plan (free, premium, enterprise)"
+        description: "Type of subscription plan — free, premium, or enterprise. Determines user access level and pricing."
         tests:
           - not_null
       
       - name: loaded_at
-        description: "Timestamp when this data was loaded into the staging layer"
+        description: "Timestamp when this data was loaded into the staging layer. Used for data freshness tracking."
         tests:
           - not_null
 
+  - name: stg_transactions
+    description: |
+      Staging model for payment and transaction data.
+      Cleans transaction records from the source system, standardizing amounts and timestamps.
+      Foundation for revenue and monetization analysis.
+    meta:
+      owner: "arnav.jain@yourcompany.com"
+      team: "Analytics Engineering"
+    columns:
+      - name: transaction_id
+        description: "Unique identifier for each transaction. Primary key for transaction records."
+        tests:
+          - unique
+          - not_null
+      
+      - name: user_id
+        description: "Foreign key linking to the users table. Identifies which user made the transaction."
+        tests:
+          - not_null
+      
+      - name: amount
+        description: "Transaction amount in the base currency. Used for revenue calculations and monetization metrics."
+        tests:
+          - not_null
+      
+      - name: timestamp
+        description: "When the transaction occurred. Used for time-series analysis and revenue attribution."
+        tests:
+          - not_null
+      
+      - name: loaded_at
+        description: "Timestamp when this data was loaded into the staging layer. Used for data freshness tracking."
+        tests:
+          - not_null
+
+  - name: stg_events
+    description: |
+      Staging model for user behavioral events.
+      Cleans event tracking data from the source system, standardizing event types and timestamps.
+      Foundation for activation, engagement, and retention analysis.
+    meta:
+      owner: "arnav.jain@yourcompany.com"
+      team: "Analytics Engineering"
+    columns:
+      - name: user_id
+        description: "Foreign key linking to the users table. Identifies which user triggered the event."
+        tests:
+          - not_null
+      
+      - name: event_type
+        description: "Type of event triggered — login, page_view, transaction, etc. Used for activation and engagement metrics."
+        tests:
+          - not_null
+      
+      - name: event_time
+        description: "When the event occurred. Used for time-series analysis and user journey tracking."
+        tests:
+          - not_null
+      
+      - name: loaded_at
+        description: "Timestamp when this data was loaded into the staging layer. Used for data freshness tracking."
+        tests:
+          - not_null

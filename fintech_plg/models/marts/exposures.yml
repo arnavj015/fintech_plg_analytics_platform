@@ -1,0 +1,13 @@
+version: 2
+
+exposures:
+  - name: revenue_dashboard
+    type: dashboard
+    url: https://tableau.company.com/revenue
+    description: "Tracks monthly revenue by plan type"
+    depends_on:
+      - ref('mart_revenue_metrics')
+    owner:
+      name: Arnav Jain
+      email: arnav.jain@company.com
+
