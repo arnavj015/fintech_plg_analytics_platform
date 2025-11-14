@@ -30,6 +30,34 @@ jobs:
       working-directory: ./fintech_plg
       run: dbt deps
     
+    - name: Create profiles.yml
+      working-directory: ./fintech_plg
+      env:
+        SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+        SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+        SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+        SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+        SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+        SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+        SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+      run: |
+        mkdir -p ~/.dbt
+        cat > ~/.dbt/profiles.yml << EOF
+        fintech_plg:
+          target: dev
+          outputs:
+            dev:
+              type: snowflake
+              account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+              user: ${{ secrets.SNOWFLAKE_USER }}
+              password: ${{ secrets.SNOWFLAKE_PASSWORD }}
+              role: ${{ secrets.SNOWFLAKE_ROLE }}
+              database: ${{ secrets.SNOWFLAKE_DATABASE }}
+              warehouse: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+              schema: ${{ secrets.SNOWFLAKE_SCHEMA }}
+              threads: 4
+        EOF
+    
     - name: Download previous state (for state:modified)
       uses: actions/download-artifact@v4
       if: github.event_name == 'pull_request'
@@ -40,63 +68,19 @@ jobs:
     
     - name: Run dbt build (modified only)
       working-directory: ./fintech_plg
-      env:
-        SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-        SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-        SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-        SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
-        SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
-        SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-        SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
       run: |
-        # Create profiles.yml from environment variables
-        mkdir -p ~/.dbt
-        cat > ~/.dbt/profiles.yml << EOF
-        fintech_plg:
-          target: dev
-          outputs:
-            dev:
-              type: snowflake
-              account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-              user: ${{ secrets.SNOWFLAKE_USER }}
-              password: ${{ secrets.SNOWFLAKE_PASSWORD }}
-              role: ${{ secrets.SNOWFLAKE_ROLE }}
-              database: ${{ secrets.SNOWFLAKE_DATABASE }}
-              warehouse: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-              schema: ${{ secrets.SNOWFLAKE_SCHEMA }}
-              threads: 4
-        EOF
-        # Run dbt build with state:modified, fallback to all if state not available
-        dbt build --select state:modified || dbt build
+        # Check if state manifest exists, then run accordingly
+        if [ -f "./target/manifest.json" ]; then
+          dbt build --select state:modified || dbt build
+        else
+          # No previous state, run everything with full-refresh for seeds
+          dbt seed --full-refresh
+          dbt build --exclude config.materialized:seed
+        fi
     
     - name: Generate dbt docs
       working-directory: ./fintech_plg
-      env:
-        SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-        SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-        SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-        SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
-        SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
-        SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-        SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
-      run: |
-        mkdir -p ~/.dbt
-        cat > ~/.dbt/profiles.yml << EOF
-        fintech_plg:
-          target: dev
-          outputs:
-            dev:
-              type: snowflake
-              account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-              user: ${{ secrets.SNOWFLAKE_USER }}
-              password: ${{ secrets.SNOWFLAKE_PASSWORD }}
-              role: ${{ secrets.SNOWFLAKE_ROLE }}
-              database: ${{ secrets.SNOWFLAKE_DATABASE }}
-              warehouse: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-              schema: ${{ secrets.SNOWFLAKE_SCHEMA }}
-              threads: 4
-        EOF
-        dbt docs generate
+      run: dbt docs generate
     
     - name: Upload state artifact
       uses: actions/upload-artifact@v4

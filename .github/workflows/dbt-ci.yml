@@ -46,8 +46,15 @@ jobs:
         working-directory: ./fintech_plg
         run: |
           dbt deps
-          dbt seed
-          # Run only modified models, fallback to all if state comparison fails
-          dbt run --select state:modified || dbt run
-          dbt test --select state:modified || dbt test
+          # Use full-refresh for seeds to avoid duplicates
+          dbt seed --full-refresh
+          # Check if state manifest exists for state:modified
+          if [ -f "./target/manifest.json" ]; then
+            dbt run --select state:modified || dbt run
+            dbt test --select state:modified || dbt test
+          else
+            # No previous state, run everything
+            dbt run
+            dbt test
+          fi
 
