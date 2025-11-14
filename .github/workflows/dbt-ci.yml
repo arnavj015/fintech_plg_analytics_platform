@@ -46,6 +46,8 @@ jobs:
         working-directory: ./fintech_plg
         run: |
           dbt deps
+          # Drop existing seed tables if they exist (handles --full-refresh edge cases)
+          dbt run-operation drop_seed_tables --args '{schema: "${{ secrets.SNOWFLAKE_SCHEMA }}", database: "${{ secrets.SNOWFLAKE_DATABASE }}"}' || true
           # Use full-refresh for seeds to avoid duplicates
           dbt seed --full-refresh
           # Check if state manifest exists for state:modified

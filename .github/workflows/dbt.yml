@@ -73,7 +73,8 @@ jobs:
         if [ -f "./target/manifest.json" ]; then
           dbt build --select state:modified || dbt build
         else
-          # No previous state, run everything with full-refresh for seeds
+          # No previous state, drop seed tables first, then run everything
+          dbt run-operation drop_seed_tables --args '{schema: "${{ secrets.SNOWFLAKE_SCHEMA }}", database: "${{ secrets.SNOWFLAKE_DATABASE }}"}' || true
           dbt seed --full-refresh
           dbt build --exclude config.materialized:seed
         fi
