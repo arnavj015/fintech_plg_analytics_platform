@@ -4,5 +4,5 @@ SELECT
     amount,
     timestamp
     {{ add_loaded_at() }}
-FROM {{ source('raw_fintech', 'transactions') }}
+FROM {{ ref('transactions') }}
 

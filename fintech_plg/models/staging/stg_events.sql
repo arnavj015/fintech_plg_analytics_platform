@@ -3,5 +3,5 @@ SELECT
     event_type,
     event_time
     {{ add_loaded_at() }}
-FROM {{ source('raw_fintech', 'events') }}
+FROM {{ ref('events') }}
 
