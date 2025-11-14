@@ -1,0 +1,62 @@
+name: dbt CI
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history needed for state:modified
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << EOF
+          fintech_plg:
+            target: dev
+            outputs:
+              dev:
+                type: snowflake
+                account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+                user: ${{ secrets.SNOWFLAKE_USER }}
+                password: ${{ secrets.SNOWFLAKE_PASSWORD }}
+                role: ${{ secrets.SNOWFLAKE_ROLE }}
+                database: ${{ secrets.SNOWFLAKE_DATABASE }}
+                warehouse: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+                schema: ${{ secrets.SNOWFLAKE_SCHEMA }}
+                threads: 4
+          EOF
+      
+      - name: Run dbt
+        working-directory: ./fintech_plg
+        run: |
+          dbt deps
+          # Drop existing seed tables if they exist (handles --full-refresh edge cases)
+          dbt run-operation drop_seed_tables --args '{schema: "${{ secrets.SNOWFLAKE_SCHEMA }}", database: "${{ secrets.SNOWFLAKE_DATABASE }}"}' || true
+          # Use full-refresh for seeds to avoid duplicates
+          dbt seed --full-refresh
+          # Check if state manifest exists for state:modified
+          if [ -f "./target/manifest.json" ]; then
+            dbt run --select state:modified || dbt run
+            dbt test --select state:modified || dbt test
+          else
+            # No previous state, run everything
+            dbt run
+            dbt test
+          fi
+

@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: core_user_activity
+    description: |
+      Unified user-level dataset combining user information, event activity, and transaction data.
+      This core model aggregates metrics from staging models to create a comprehensive user profile.
+      Used for activation analysis, retention tracking, and monetization metrics.
+    meta:
+      owner: "arnav.jain@yourcompany.com"
+      team: "Analytics Engineering"
+    columns:
+      - name: user_id
+        description: "Unique user identifier. Primary key for user-level analysis."
+        tests:
+          - not_null
+          - unique
+
+      - name: signup_date
+        description: "Date when the user signed up. Used for cohort analysis and time-to-value metrics."
+
+      - name: plan_type
+        description: "Subscription plan type — free, premium, or enterprise. Used for segmentation and revenue analysis."
+
+      - name: total_events
+        description: "Total number of distinct event types the user has triggered. Key metric for activation analysis."
+
+      - name: first_event_time
+        description: "Timestamp of the user's first event. Used for time-to-activation and onboarding analysis."
+
+      - name: last_event_time
+        description: "Timestamp of the user's most recent event. Used for retention and engagement analysis."
+
+      - name: txn_count
+        description: "Total number of transactions per user. Used for monetization and payment frequency analysis."
+
+      - name: total_revenue
+        description: "Sum of all transaction amounts per user. Primary metric for revenue and monetization analysis."

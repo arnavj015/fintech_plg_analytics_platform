@@ -1,0 +1,98 @@
+name: dbt CI/CD
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  dbt-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history needed for state:modified
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Install dbt dependencies
+      working-directory: ./fintech_plg
+      run: dbt deps
+    
+    - name: Create profiles.yml
+      working-directory: ./fintech_plg
+      env:
+        SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+        SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+        SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+        SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+        SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+        SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+        SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+      run: |
+        mkdir -p ~/.dbt
+        cat > ~/.dbt/profiles.yml << EOF
+        fintech_plg:
+          target: dev
+          outputs:
+            dev:
+              type: snowflake
+              account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+              user: ${{ secrets.SNOWFLAKE_USER }}
+              password: ${{ secrets.SNOWFLAKE_PASSWORD }}
+              role: ${{ secrets.SNOWFLAKE_ROLE }}
+              database: ${{ secrets.SNOWFLAKE_DATABASE }}
+              warehouse: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+              schema: ${{ secrets.SNOWFLAKE_SCHEMA }}
+              threads: 4
+        EOF
+    
+    - name: Download previous state (for state:modified)
+      uses: actions/download-artifact@v4
+      if: github.event_name == 'pull_request'
+      continue-on-error: true
+      with:
+        name: dbt-state
+        path: ./fintech_plg/target
+    
+    - name: Run dbt build (modified only)
+      working-directory: ./fintech_plg
+      run: |
+        # Check if state manifest exists, then run accordingly
+        if [ -f "./target/manifest.json" ]; then
+          dbt build --select state:modified || dbt build
+        else
+          # No previous state, drop seed tables first, then run everything
+          dbt run-operation drop_seed_tables --args '{schema: "${{ secrets.SNOWFLAKE_SCHEMA }}", database: "${{ secrets.SNOWFLAKE_DATABASE }}"}' || true
+          dbt seed --full-refresh
+          dbt build --exclude config.materialized:seed
+        fi
+    
+    - name: Generate dbt docs
+      working-directory: ./fintech_plg
+      run: dbt docs generate
+    
+    - name: Upload state artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dbt-state
+        path: ./fintech_plg/target
+        retention-days: 1
+    
+    - name: Deploy docs to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./fintech_plg/target

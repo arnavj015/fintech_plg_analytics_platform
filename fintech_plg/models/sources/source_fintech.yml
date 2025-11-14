@@ -1,0 +1,18 @@
+
+version: 2
+
+sources:
+  - name: raw_fintech
+    description: "Simulated raw layer for fintech product data"
+    database: FINTECH_DEV
+    schema: PUBLIC
+    tables:
+      - name: users
+        description: "User master table (seeded)"
+
+      - name: transactions
+        description: "Payment and transaction logs"
+
+      - name: events
+        description: "User-level behavioral events"
+
