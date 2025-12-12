@@ -1,2 +1,2 @@
 dbt-snowflake>=1.8.0
-
+dbt-duckdb>=1.10.0

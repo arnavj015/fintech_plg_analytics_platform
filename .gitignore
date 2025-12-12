@@ -3,6 +3,7 @@ target/
 dbt_packages/
 logs/
 *.log
+*.duckdb
 
 # Python
 __pycache__/
