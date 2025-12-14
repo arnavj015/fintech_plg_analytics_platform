@@ -5,7 +5,6 @@ models:
     description: |
       Key user activation KPIs for PLG (Product-Led Growth) funnel analysis.
       Measures how many users become activated (engage with multiple product features).
-      Critical metric for product-led growth companies to track user onboarding success.
     meta:
       owner: "arnav.jain@yourcompany.com"
       team: "Analytics Engineering"
@@ -35,21 +34,21 @@ models:
 
       - name: total_revenue
         description: "Sum of all transaction amounts across all users. Total platform revenue."
+        tests:
+          - not_null
+          - non_negative_revenue
 
       - name: avg_revenue_per_user
         description: "Average revenue per paying user. Calculated as total_revenue / paying_users."
 
   - name: mart_retention_metrics
-    description: |
-      Weekly retention cohort metrics tracking user engagement over time.
-      Groups users by their first event week (cohort) and measures how many remain active 4+ weeks later.
-      Essential for understanding product stickiness and long-term user value.
+    description: "Daily retention metrics by cohort, measuring user stickiness after signup."
     meta:
       owner: "arnav.jain@yourcompany.com"
       team: "Analytics Engineering"
     columns:
       - name: cohort_week
-        description: "Week when users in this cohort first became active (first event time). Used for cohort-based retention analysis."
+        description: "User signup date that defines the cohort."
 
       - name: cohort_size
         description: "Total number of users in this cohort (users who first became active in this week)."
@@ -59,3 +58,23 @@ models:
 
       - name: retention_4w_rate
         description: "Percentage of cohort users retained after 4 weeks. Calculated as (retained_4w / cohort_size) * 100."
+
+  - name: mart_revenue_by_plan
+    description: |
+      Time-aware revenue mart showing revenue by the plan users were on at the time of purchase.
+      This enables accurate revenue attribution and answers critical business questions like:
+      "How much revenue did Pro users generate last month?" and "Did upgrades precede revenue or follow it?"
+    meta:
+      owner: "arnav.jain@yourcompany.com"
+      team: "Analytics Engineering"
+    columns:
+      - name: event_date
+        description: "Date when the revenue-generating transaction occurred."
+      
+      - name: plan_type
+        description: "Plan type the user was on at the time of the transaction. Critical for accurate revenue attribution."
+        tests:
+          - not_null
+      
+      - name: revenue
+        description: "Total revenue generated on this date for users on this plan type."

@@ -25,6 +25,9 @@ models:
         description: "Type of subscription plan — free, premium, or enterprise. Determines user access level and pricing."
         tests:
           - not_null
+          - accepted_values:
+              arguments:
+                values: ['free', 'premium', 'enterprise']
       
       - name: loaded_at
         description: "Timestamp when this data was loaded into the staging layer. Used for data freshness tracking."

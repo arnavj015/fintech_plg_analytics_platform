@@ -42,3 +42,8 @@ models:
     marts:
       +materialized: table
       +tags: ["marts"]
+
+# Configuring snapshots
+snapshots:
+  fintech_plg:
+    +schema: snapshots
