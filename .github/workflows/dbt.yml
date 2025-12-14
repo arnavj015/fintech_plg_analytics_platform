@@ -51,6 +51,10 @@ jobs:
         name: dbt-state
         path: ./fintech_plg/target
     
+    - name: Run dbt snapshot
+      working-directory: ./fintech_plg
+      run: dbt snapshot
+    
     - name: Run dbt build (modified only)
       working-directory: ./fintech_plg
       run: |

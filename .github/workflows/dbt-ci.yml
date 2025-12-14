@@ -42,6 +42,8 @@ jobs:
           dbt deps
           # Use full-refresh for seeds to avoid duplicates
           dbt seed --full-refresh
+          # Run snapshots first (required for models that depend on them)
+          dbt snapshot
           # Check if state manifest exists for state:modified
           if [ -f "./target/manifest.json" ]; then
             dbt run --select state:modified || dbt run
