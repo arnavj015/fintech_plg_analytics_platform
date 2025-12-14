@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history needed for state:modified
+          fetch-depth: 0 
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,18 +27,12 @@ jobs:
         run: |
           mkdir -p ~/.dbt
           cat > ~/.dbt/profiles.yml << EOF
-          fintech_plg:
+          fintech_plg_duckdb:
             target: dev
             outputs:
               dev:
-                type: snowflake
-                account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-                user: ${{ secrets.SNOWFLAKE_USER }}
-                password: ${{ secrets.SNOWFLAKE_PASSWORD }}
-                role: ${{ secrets.SNOWFLAKE_ROLE }}
-                database: ${{ secrets.SNOWFLAKE_DATABASE }}
-                warehouse: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-                schema: ${{ secrets.SNOWFLAKE_SCHEMA }}
+                type: duckdb
+                path: fintech_plg.duckdb
                 threads: 4
           EOF
       
@@ -46,17 +40,19 @@ jobs:
         working-directory: ./fintech_plg
         run: |
           dbt deps
-          # Drop existing seed tables if they exist (handles --full-refresh edge cases)
-          dbt run-operation drop_seed_tables --args '{schema: "${{ secrets.SNOWFLAKE_SCHEMA }}", database: "${{ secrets.SNOWFLAKE_DATABASE }}"}' || true
           # Use full-refresh for seeds to avoid duplicates
           dbt seed --full-refresh
+          # Run staging models first (required for snapshots)
+          dbt run --select staging
+          # Run snapshots (required for models that depend on them)
+          dbt snapshot
           # Check if state manifest exists for state:modified
           if [ -f "./target/manifest.json" ]; then
-            dbt run --select state:modified || dbt run
+            dbt run --select state:modified || dbt run --exclude staging
             dbt test --select state:modified || dbt test
           else
-            # No previous state, run everything
-            dbt run
+            # No previous state, run everything (excluding staging, already done)
+            dbt run --exclude staging
             dbt test
           fi
 

@@ -14,7 +14,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Full history needed for state:modified
+        fetch-depth: 0  
     
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -31,30 +31,15 @@ jobs:
       run: dbt deps
     
     - name: Create profiles.yml
-      working-directory: ./fintech_plg
-      env:
-        SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-        SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-        SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-        SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
-        SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
-        SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-        SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
       run: |
         mkdir -p ~/.dbt
         cat > ~/.dbt/profiles.yml << EOF
-        fintech_plg:
+        fintech_plg_duckdb:
           target: dev
           outputs:
             dev:
-              type: snowflake
-              account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-              user: ${{ secrets.SNOWFLAKE_USER }}
-              password: ${{ secrets.SNOWFLAKE_PASSWORD }}
-              role: ${{ secrets.SNOWFLAKE_ROLE }}
-              database: ${{ secrets.SNOWFLAKE_DATABASE }}
-              warehouse: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-              schema: ${{ secrets.SNOWFLAKE_SCHEMA }}
+              type: duckdb
+              path: fintech_plg.duckdb
               threads: 4
         EOF
     
@@ -66,6 +51,16 @@ jobs:
         name: dbt-state
         path: ./fintech_plg/target
     
+    - name: Run seeds and staging models
+      working-directory: ./fintech_plg
+      run: |
+        dbt seed --full-refresh
+        dbt run --select staging
+    
+    - name: Run dbt snapshot
+      working-directory: ./fintech_plg
+      run: dbt snapshot
+    
     - name: Run dbt build (modified only)
       working-directory: ./fintech_plg
       run: |
@@ -73,10 +68,8 @@ jobs:
         if [ -f "./target/manifest.json" ]; then
           dbt build --select state:modified || dbt build
         else
-          # No previous state, drop seed tables first, then run everything
-          dbt run-operation drop_seed_tables --args '{schema: "${{ secrets.SNOWFLAKE_SCHEMA }}", database: "${{ secrets.SNOWFLAKE_DATABASE }}"}' || true
-          dbt seed --full-refresh
-          dbt build --exclude config.materialized:seed
+          # No previous state, run everything (excluding seeds and staging, already done)
+          dbt build --exclude config.materialized:seed --exclude staging
         fi
     
     - name: Generate dbt docs

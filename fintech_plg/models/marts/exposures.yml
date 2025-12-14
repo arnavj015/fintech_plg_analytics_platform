@@ -11,3 +11,19 @@ exposures:
       name: Arnav Jain
       email: arnav.jain@company.com
 
+  - name: product_growth_dashboard
+    type: dashboard
+    maturity: high
+    url: https://placeholder-for-now
+    description: >
+      Product and growth analytics used to understand upgrade behavior,
+      revenue attribution, and lifecycle performance.
+    owner:
+      name: Arnav Jain
+      email: arnavj015@berkeley.edu
+    depends_on:
+      - ref('mart_activation_metrics')
+      - ref('mart_revenue_metrics')
+      - ref('mart_retention_metrics')
+      - ref('mart_revenue_by_plan')
+
