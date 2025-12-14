@@ -51,6 +51,12 @@ jobs:
         name: dbt-state
         path: ./fintech_plg/target
     
+    - name: Run seeds and staging models
+      working-directory: ./fintech_plg
+      run: |
+        dbt seed --full-refresh
+        dbt run --select staging
+    
     - name: Run dbt snapshot
       working-directory: ./fintech_plg
       run: dbt snapshot
@@ -62,9 +68,8 @@ jobs:
         if [ -f "./target/manifest.json" ]; then
           dbt build --select state:modified || dbt build
         else
-          # No previous state, run everything
-          dbt seed --full-refresh
-          dbt build --exclude config.materialized:seed
+          # No previous state, run everything (excluding seeds and staging, already done)
+          dbt build --exclude config.materialized:seed --exclude staging
         fi
     
     - name: Generate dbt docs
