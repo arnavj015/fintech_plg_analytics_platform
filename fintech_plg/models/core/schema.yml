@@ -1,99 +1,74 @@
 version: 2
 
 models:
+
   - name: core_user_activity
-    description: |
-      Unified user-level dataset combining user information, event activity, and transaction data.
-      This core model aggregates metrics from staging models to create a comprehensive user profile.
-      Used for activation analysis, retention tracking, and monetization metrics.
-    meta:
-      owner: "arnav.jain@yourcompany.com"
-      team: "Analytics Engineering"
+    description: "User-level activity and revenue summary."
     columns:
       - name: user_id
-        description: "Unique user identifier. Primary key for user-level analysis."
         tests:
           - not_null
           - unique
           - relationships:
-              arguments:
-                to: stg_users
-                field: user_id
-
-      - name: signup_date
-        description: "Date when the user signed up. Used for cohort analysis and time-to-value metrics."
-
-      - name: plan_type
-        description: "Subscription plan type — free, premium, or enterprise. Used for segmentation and revenue analysis."
-        tests:
-          - not_null
-
-      - name: total_events
-        description: "Total number of distinct event types the user has triggered. Key metric for activation analysis."
-
-      - name: first_event_time
-        description: "Timestamp of the user's first event. Used for time-to-activation and onboarding analysis."
-
-      - name: last_event_time
-        description: "Timestamp of the user's most recent event. Used for retention and engagement analysis."
-
-      - name: txn_count
-        description: "Total number of transactions per user. Used for monetization and payment frequency analysis."
-
-      - name: total_revenue
-        description: "Sum of all transaction amounts per user. Primary metric for revenue and monetization analysis."
+              to: ref('dim_users')
+              field: user_id
 
   - name: dim_users
-    description: "Current-state user dimension table. Provides clean, current user information for day-to-day joins and dashboards."
-    meta:
-      owner: "arnav.jain@yourcompany.com"
-      team: "Analytics Engineering"
+    description: "Current-state canonical user dimension."
     columns:
       - name: user_id
-        description: "Unique user identifier. Primary key for the users dimension."
         tests:
           - not_null
           - unique
-      
-      - name: signup_date
-        description: "Date when the user signed up for the platform."
-      
       - name: plan_type
-        description: "Current subscription plan type — free, premium, or enterprise."
         tests:
-          - not_null
           - accepted_values:
-              arguments:
-                values: ['free', 'premium', 'enterprise']
-      
-      - name: country
-        description: "User's country location. Currently placeholder for future data."
+              values: ['free', 'premium', 'enterprise']
 
   - name: fact_events
-    description: "Atomic fact table with one row per event. This is the source of truth for all user events in the system."
-    meta:
-      owner: "arnav.jain@yourcompany.com"
-      team: "Analytics Engineering"
+    description: "Atomic event fact table (one row per event)."
     columns:
       - name: event_id
-        description: "Unique identifier for each event. Surrogate key generated from user_id, event_type, and event_time."
         tests:
+          - not_null
           - unique
-      
       - name: user_id
-        description: "Foreign key to dim_users. Identifies which user triggered the event."
+        tests:
+          - relationships:
+              to: ref('dim_users')
+              field: user_id
+
+  - name: fact_events_with_plan
+    description: "Event fact enriched with plan active at event time using snapshot validity windows."
+    columns:
+      - name: event_id
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('fact_events')
+              field: event_id
+
+      - name: user_id
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: dim_users
-                field: user_id
-      
-      - name: event_type
-        description: "Type of event — login, page_view, transaction, etc."
-      
-      - name: event_date
-        description: "Date when the event occurred. Derived from event_time timestamp."
-      
+              to: ref('dim_users')
+              field: user_id
+
+      - name: plan_type
+        description: "Plan active at the time the event occurred (temporal join)."
+  
+  - name: fact_events_with_amount
+    description: "Event fact enriched with amount (if event is a transaction)."
+    columns:
+      - name: event_id
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('fact_events')
+              field: event_id
       - name: amount
-        description: "Event amount (if applicable). Currently NULL, will be populated for transaction events."
+        tests:
+          - not_null

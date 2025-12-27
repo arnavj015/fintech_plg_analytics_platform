@@ -1,1 +1,2 @@
 dbt-duckdb>=1.10.0
+faker>=20.0.0

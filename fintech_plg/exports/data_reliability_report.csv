@@ -1,0 +1,2 @@
+report_generated_at,bad_events,total_events,pct_bad_event_timestamps,bad_txns,total_txns,pct_bad_txn_timestamps,orphan_txns,pct_orphan_txns,duplicate_txns
+2025-12-27 15:12:50.304998+05:30,5,304,0.01644736842105263,6,148,0.04054054054054054,6,0.04054054054054054,0

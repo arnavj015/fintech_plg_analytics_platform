@@ -6,7 +6,7 @@ models:
       Key user activation KPIs for PLG (Product-Led Growth) funnel analysis.
       Measures how many users become activated (engage with multiple product features).
     meta:
-      owner: "arnav.jain@yourcompany.com"
+      owner: "arnav.jain@berkeley.edu"
       team: "Analytics Engineering"
     columns:
       - name: total_signups
@@ -26,7 +26,7 @@ models:
       Provides high-level revenue performance indicators for business stakeholders.
       Used for revenue reporting and financial analysis.
     meta:
-      owner: "arnav.jain@yourcompany.com"
+      owner: "arnav.jain@berkeley.edu"
       team: "Analytics Engineering"
     columns:
       - name: paying_users
@@ -44,7 +44,7 @@ models:
   - name: mart_retention_metrics
     description: "Daily retention metrics by cohort, measuring user stickiness after signup."
     meta:
-      owner: "arnav.jain@yourcompany.com"
+      owner: "arnav.jain@berkeley.edu"
       team: "Analytics Engineering"
     columns:
       - name: cohort_week
@@ -65,7 +65,7 @@ models:
       This enables accurate revenue attribution and answers critical business questions like:
       "How much revenue did Pro users generate last month?" and "Did upgrades precede revenue or follow it?"
     meta:
-      owner: "arnav.jain@yourcompany.com"
+      owner: "arnav.jain@berkeley.edu"
       team: "Analytics Engineering"
     columns:
       - name: event_date
@@ -78,3 +78,14 @@ models:
       
       - name: revenue
         description: "Total revenue generated on this date for users on this plan type."
+  - name: data_reliability_report
+    description: "Summary of data quality and reliability issues."
+    columns:
+      - name: report_generated_at
+        description: "Timestamp when the report was generated."
+      - name: pct_orphan_txns
+        description: "Percentage of transactions that do not map to any known user."
+      - name: pct_bad_event_timestamps
+        description: "Percentage of events with malformed or missing timestamps."
+      - name: duplicate_txns
+        description: "Count of duplicate transaction records detected."

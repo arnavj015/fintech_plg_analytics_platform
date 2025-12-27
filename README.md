@@ -1,32 +1,66 @@
-# Fintech Analytics Engineering Platform
+# Fintech PLG Analytics Engineering Platform
 
 ## Overview
 
-Built a production-grade analytics platform modeling user events,
-transactions, and plan changes into time-aware business metrics.
+End-to-end analytics engineering project modeling user events, transactions, and subscription plan changes into reliable business metrics and dashboards. The project demonstrates production-style data modeling, historical tracking, and metric governance.
 
-## Key Concepts Implemented
+### Capabilities
 
-- Grain-first fact tables
-- SCD Type 2 snapshots for historical accuracy
-- Time-aware joins for correct revenue attribution
-- dbt tests, documentation, and lineage
-- Self-serve analytics and metric governance
+- Event and transaction modeling
 
-## Business Questions Answered
+- Historical plan tracking with SCD Type 2 snapshots
 
-- Does upgrading users increase revenue, or does revenue precede upgrades?
+- Time-aware revenue attribution
 
-- How does revenue differ by plan over time?
+- Data quality testing and quarantine handling
 
-- What features enable churn and LTV modeling?
+- Cohort retention and activation metrics
 
-## Tech Stack
+- User-level feature generation for churn/LTV analysis
 
-dbt, DuckDB, GitHub Actions, Python (data generation)
+- Tableau Public dashboard for core KPIs
 
-## Why This Matters
+### Data Architecture
 
-Demonstrates how modern fintech analytics teams build
-trustworthy, scalable analytics systems that support
-product, growth, and data science decisions.
+staging – cleaned canonicalized source models
+
+snapshots – subscription plan history
+
+core – fact and dimension tables
+
+marts – activation, retention, revenue, user features
+
+quarantine tables – malformed timestamps, duplicates, orphans
+
+data reliability report – summary of pipeline issues
+
+### Business Metrics Produced
+
+- Activation rate
+
+- 4-week retention
+
+- Revenue by plan over time
+
+- ARPU
+
+- Paying users
+
+- Total revenue
+
+### Tech Stack
+
+dbt Core
+
+DuckDB
+
+Python (data generation)
+
+Tableau Public
+
+### Dashboard
+
+Link: https://public.tableau.com/app/profile/arnav.jain3373/viz/Book1_17668363990340/FintechPLGAnalytics
+
+
+
