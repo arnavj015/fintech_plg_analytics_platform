@@ -1,6 +1,5 @@
 -- Self-serve analytics entry point for product & growth teams
--- This is exploratory but version-controlled
--- Separates core logic from ad-hoc questions
+-- This is exploratory
 select
   event_date,
   plan_type,

@@ -4,6 +4,8 @@ WITH activity AS (
     DATE_TRUNC('week', first_event_time) AS cohort_week,
     DATE_TRUNC('week', last_event_time) AS last_active_week
   FROM {{ ref('core_user_activity') }}
+  WHERE first_event_time IS NOT NULL
+    AND last_event_time IS NOT NULL
 )
 
 SELECT

@@ -1,29 +1,20 @@
 version: 2
 
 exposures:
-  - name: revenue_dashboard
-    type: dashboard
-    url: https://tableau.company.com/revenue
-    description: "Tracks monthly revenue by plan type"
-    depends_on:
-      - ref('mart_revenue_metrics')
-    owner:
-      name: Arnav Jain
-      email: arnav.jain@company.com
-
-  - name: product_growth_dashboard
+  - name: fintech_plg_analytics_dashboard
     type: dashboard
     maturity: high
-    url: https://placeholder-for-now
+    url: https://public.tableau.com/app/profile/arnav.jain3373/viz/Book1_17668363990340/FintechPLGAnalytics
     description: >
-      Product and growth analytics used to understand upgrade behavior,
-      revenue attribution, and lifecycle performance.
+      Tableau Public dashboard built on dbt + DuckDB marts, showing
+      activation, 4-week retention, time-aware revenue by plan, and
+      executive KPIs (paying users, ARPU, total revenue).
+    depends_on:
+      - ref('mart_revenue_by_plan')
+      - ref('mart_revenue_metrics')
+      - ref('mart_activation_metrics')
+      - ref('mart_retention_metrics')
+      - ref('data_reliability_report')
     owner:
       name: Arnav Jain
       email: arnavj015@berkeley.edu
-    depends_on:
-      - ref('mart_activation_metrics')
-      - ref('mart_revenue_metrics')
-      - ref('mart_retention_metrics')
-      - ref('mart_revenue_by_plan')
-

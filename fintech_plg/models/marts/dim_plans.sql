@@ -1,12 +1,10 @@
-SELECT DISTINCT
-    plan_type AS plan_id,
-    plan_type AS plan_name,
-    CASE 
-        WHEN plan_type = 'free' THEN 0
-        WHEN plan_type = 'premium' THEN 99.99
-        WHEN plan_type = 'enterprise' THEN 299.99
-        ELSE NULL
-    END AS monthly_price
-FROM {{ ref('stg_users') }}
-WHERE plan_type IS NOT NULL
-
+select
+    plan_id,
+    plan_name,
+    monthly_price
+from (
+    values
+        ('free', 'Free', 0.00),
+        ('premium', 'Premium', 99.99),
+        ('enterprise', 'Enterprise', 299.99)
+) as plans(plan_id, plan_name, monthly_price)

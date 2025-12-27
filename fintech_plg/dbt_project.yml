@@ -1,16 +1,8 @@
-
-# Name your project! Project names should contain only lowercase characters
-# and underscores. A good package name should reflect your organization's
-# name or the intended use of these models
 name: 'fintech_plg'
 version: '1.0.0'
 
-# This setting configures which "profile" dbt uses for this project.
 profile: 'fintech_plg_duckdb'
 
-# These configurations specify where dbt should look for different types of files.
-# The `model-paths` config, for example, states that models in this project can be
-# found in the "models/" directory. You probably won't need to change these!
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
@@ -18,27 +10,40 @@ seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
-clean-targets:         # directories to be removed by `dbt clean`
+clean-targets:        
   - "target"
   - "dbt_packages"
 
-
-# Configuring models
-# Full documentation: https://docs.getdbt.com/docs/configuring-models
+seeds:
+  fintech_plg:
+    events:
+      +column_types:
+        user_id: varchar
+        event_type: varchar
+        event_time: timestamp
+    transactions:
+      +column_types:
+        transaction_id: varchar
+        user_id: varchar
+        amount: double
+        timestamp: timestamp
+    users:
+      +column_types:  
+        user_id: varchar
+        signup_date: timestamp
+        plan_type: varchar
+        
 
 models:
   fintech_plg:
-    # Staging models: Raw data transformations, materialized as views for speed
     staging:
       +materialized: view
       +tags: ["staging"]
     
-    # Core models: Intermediate business logic, can be views or tables
     core:
       +materialized: view
       +tags: ["core"]
     
-    # Marts models: Final business-ready models, materialized as tables for performance
     marts:
       +materialized: table
       +tags: ["marts"]

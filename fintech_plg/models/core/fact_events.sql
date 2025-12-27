@@ -1,21 +1,18 @@
-with events_with_amounts as (
-  select
-    e.user_id,
-    e.event_type,
-    e.event_time,
-    coalesce(t.amount, 0) as amount
-  from {{ ref('stg_events') }} e
-  left join {{ ref('stg_transactions') }} t
-    on e.user_id = t.user_id
-   and e.event_time::date = t.timestamp::date
-   and e.event_type = 'transaction'
+with events as (
+
+    select
+        e.user_id_clean as user_id,
+        e.event_type,
+        e.event_time,
+        {{ dbt_utils.generate_surrogate_key(['user_id_clean', 'event_type', 'event_time']) }} as event_id
+    from {{ ref('stg_events') }} e
+    where e.is_bad_timestamp = 0
 )
 
 select
-  {{ dbt_utils.generate_surrogate_key(['user_id', 'event_type', 'event_time']) }} as event_id,
-  user_id,
-  event_type,
-  event_time::date as event_date,
-  amount
-from events_with_amounts
-
+    event_id,
+    user_id,
+    event_type,
+    cast(event_time as date) as event_date,
+    event_time
+from events
